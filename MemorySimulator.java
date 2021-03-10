@@ -1,3 +1,9 @@
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.Scanner;
+
+import Exceptions.*;
+
 public class MemorySimulator {
     static final int CPU_ADDRESS_WIDTH = 16;
     static final int MEMORY_ADDRESS_WIDTH = 12;
@@ -16,19 +22,38 @@ public class MemorySimulator {
 
         Kernel os = new Kernel(cpu, ram);
 
+        File file = new File("test_files/test_1.txt"); 
+        Scanner sc;
         try {
-            final Hexadecimal location = cpu.readMemory(new Hexadecimal("5819"));
-            System.out.println(ram[location.pageFrame][location.offset]);
-        } catch (PageFault e) {
-            System.out.println("Page fault");
-            os.handlePageFault(new Hexadecimal("5819"));
+            sc = new Scanner(file);
+            while (sc.hasNextLine()) {
+                if (Integer.parseInt(sc.nextLine()) == 0) {
+                    final String value = sc.nextLine();
+                    memoryRead(cpu, ram, os, new Hexadecimal(value));
+                } else {
+                    sc.nextLine();
+                    sc.nextLine();
+                }
+            }
+    
+            sc.close();
+        } catch (FileNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
+    }
+    public static void memoryRead(CPU cpu, int[][] ram, Kernel os, Hexadecimal memoryLocation) {
         try {
-            final Hexadecimal location = cpu.readMemory(new Hexadecimal("5819"));
-            System.out.println(ram[location.pageFrame][location.offset]);
+            final Hexadecimal location = cpu.readMemory(memoryLocation);
+            final int value = ram[location.pageFrame][location.offset];
+            if (value != -1) {
+                System.out.println(value);
+            } else {
+                System.out.println("[No Data]");
+            }
         } catch (PageFault e) {
             System.out.println("Page fault");
-            os.handlePageFault(new Hexadecimal("5819"));
+            os.handlePageFault(memoryLocation);
         }
     }
 }

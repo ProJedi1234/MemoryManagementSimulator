@@ -6,6 +6,8 @@ public class Kernel {
     CPU cpu;
     int[][] ram;
 
+    int clockPosition = 0;
+
     public Kernel(CPU cpu, int[][] ram) {
         this.cpu = cpu;
         this.ram = ram;
@@ -18,7 +20,12 @@ public class Kernel {
             String value = Files.readAllLines(Paths.get(fileLocation)).get(memoryAddress.offset);
             System.out.println(value);
 
-            final int nextFrame = findNextAvailableFrame();
+            final int nextFrame = findNextAvailableMemoryLocation();
+
+            //guard
+            if (nextFrame == -1) {
+                throw new RuntimeException("No new memory space could be found");
+            }
 
             cpu.mmu.addToMemory(memoryAddress, nextFrame);
             ram[nextFrame][memoryAddress.offset] = Integer.parseInt(value);
@@ -27,13 +34,13 @@ public class Kernel {
             e.printStackTrace();
         }
     }
-    public int findNextAvailableFrame() {
-        for (int i = 0; i < ram.length; i++) {
-            if (ram[i][0] == -1) {
-                return i;
+    public int findNextAvailableMemoryLocation() {
+        while (true) {
+            PageTableEntry page = cpu.mmu.virtualPageTable.pageTable[clockPosition];
+            if (page == null || page.r == 0) {
+                return clockPosition;
             }
+            clockPosition++;
         }
-
-        return -1;
     }
 }

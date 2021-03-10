@@ -1,4 +1,5 @@
 import java.lang.Math;
+import Exceptions.*;
 
 public class MMU {
     VirtualPageTable virtualPageTable;
