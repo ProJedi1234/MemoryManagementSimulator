@@ -1,7 +1,20 @@
+import java.lang.Math;
+
 public class MMU {
     VirtualPageTable virtualPageTable;
 
-    public MMU(int busSize) {
-        this.virtualPageTable = new VirtualPageTable(2^busSize);
+    public MMU(int busSize, int offset) {
+        this.virtualPageTable = new VirtualPageTable((int)Math.pow(2, busSize - offset), (int)Math.pow(2, offset));
+    }
+    public void addToMemory(Hexadecimal memoryLocation, int pageFrame) {
+        virtualPageTable.pageTable[memoryLocation.pageFrame] = new PageTableEntry(1, 1, 0, pageFrame);
+    }
+    public Hexadecimal readMemory(Hexadecimal memoryLocation) {
+        final PageTableEntry page = virtualPageTable.pageTable[memoryLocation.pageFrame];
+        if (page != null && page.pageFrame != -1) {
+            return new Hexadecimal(String.format("%02X", page.pageFrame) + memoryLocation.offsetHex());
+        } else {
+            throw new PageFault();
+        }
     }
 }
