@@ -31,8 +31,10 @@ public class MemorySimulator {
                     final String value = sc.nextLine();
                     memoryRead(cpu, ram, os, new Hexadecimal(value));
                 } else {
-                    sc.nextLine();
-                    sc.nextLine();
+                    final String location = sc.nextLine();
+                    final int value = Integer.parseInt(sc.nextLine());
+
+                    memoryWrite(cpu, ram, os, new Hexadecimal(location), value);
                 }
             }
     
@@ -55,5 +57,18 @@ public class MemorySimulator {
             System.out.println("Page fault");
             os.handlePageFault(memoryLocation);
         }
+    }
+    public static void memoryWrite(CPU cpu, int[][] ram, Kernel os, Hexadecimal memoryLocation, int value) {
+        try {
+            final Hexadecimal location = cpu.readMemory(memoryLocation);
+            ram[location.pageFrame][location.offset] = value;
+
+            System.out.println("[Memory updated]");
+        } catch (PageFault e) {
+            System.out.println("[Page fault]");
+            os.handlePageFault(memoryLocation);
+        }
+
+        cpu.mmu.setDirtyBit(memoryLocation);
     }
 }

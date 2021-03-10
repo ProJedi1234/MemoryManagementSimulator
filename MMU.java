@@ -1,4 +1,3 @@
-import java.lang.Math;
 import Exceptions.*;
 
 public class MMU {
@@ -9,6 +8,9 @@ public class MMU {
     }
     public void addToMemory(Hexadecimal memoryLocation, int pageFrame) {
         virtualPageTable.pageTable[memoryLocation.pageFrame] = new PageTableEntry(1, 1, 0, pageFrame);
+    }
+    public void setDirtyBit(Hexadecimal memoryLocation) {
+        virtualPageTable.pageTable[memoryLocation.pageFrame].d = 1;
     }
     public Hexadecimal readMemory(Hexadecimal memoryLocation) {
         final PageTableEntry page = virtualPageTable.pageTable[memoryLocation.pageFrame];
