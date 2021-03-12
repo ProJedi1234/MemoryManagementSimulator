@@ -13,4 +13,7 @@ public class Hexadecimal {
     public String offsetHex() {
         return String.format("%02X", offset);
     }
+    public String getHex() {
+        return pageFrameHex() + offsetHex();
+    }
 }
