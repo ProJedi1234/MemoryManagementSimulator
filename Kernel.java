@@ -69,13 +69,14 @@ public class Kernel {
                     }
                 }
 
-                cpu.mmu.addToMemory(memoryAddress, page.pageFrame);
+                cpu.mmu.addToMemory(memoryAddress, page.pageFrame, cpu.tlb);
                 
                 if (page != null) {
                     for (int i = 0; i < 256; i++) {
                         ram[page.pageFrame][i] = Integer.parseInt(values.get(i));
                     }
 
+                    cpu.tlb.deletePage(memoryAddress);
                     cpu.mmu.virtualPageTable.pageTable[nextPage].pageFrame = -1;
                 } else {
                     for (int i = 0; i < values.size(); i++) {
@@ -83,7 +84,7 @@ public class Kernel {
                     }
                 }
             } else {
-                cpu.mmu.addToMemory(memoryAddress, nextMemLoc);
+                cpu.mmu.addToMemory(memoryAddress, nextMemLoc, cpu.tlb);
 
                 for (int i = 0; i < values.size(); i++) {
                     ram[nextMemLoc][i] = Integer.parseInt(values.get(i));

@@ -10,8 +10,17 @@ public class TLB {
         this.tlbSize = tlbSize;
     }
 
-    public void addNewAddress(TLBEntry entry) {
-        data[lastIn++] = entry;
+    public void addNewAddress(TLBEntry entry, MMU mmu) {
+        TLBEntry curEntry = data[lastIn];
+
+        if (curEntry != null && curEntry.tableEntry.d == 1) {
+            //dirty bit set; update page table
+            mmu.setDirtyBit(curEntry.vPage);
+        }
+
+        data[lastIn] = entry;
+
+        lastIn++;
 
         if (lastIn >= tlbSize) {
             lastIn = 0;
@@ -19,12 +28,21 @@ public class TLB {
     }
     public TLBEntry findPage(Hexadecimal memoryAddress) throws TLBFault {
         for (TLBEntry tlbEntry : data) {
-            if (tlbEntry.vPage == memoryAddress.pageFrame){
+            if (tlbEntry != null && tlbEntry.vPage == memoryAddress.pageFrame){
                 return tlbEntry;
             }
         }
 
         throw new TLBFault();
+    }
+    public void deletePage(Hexadecimal memoryAddress) {
+        for (int i = 0; i < data.length; i++) {
+            if (data[i] != null && data[i].vPage == memoryAddress.pageFrame) {
+                data[i] = null;
+
+                break;
+            }
+        }
     }
     public void setDirtyBit(Hexadecimal memoryLocation) {
         TLBEntry entry = findPage(memoryLocation);
