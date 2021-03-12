@@ -1,5 +1,3 @@
-package CSVFile;
-
 import java.io.FileWriter;
 import java.util.ArrayList;
 
