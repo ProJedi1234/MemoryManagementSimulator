@@ -1,0 +1,22 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Launch Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "Launch MemorySimulator",
+            "request": "launch",
+            "mainClass": "MemorySimulator",
+            "projectName": "Project 2 Java_52cfd59f",
+            "args": "test_files/test_2.txt"
+        }
+    ]
+}

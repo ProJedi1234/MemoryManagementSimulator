@@ -3,10 +3,15 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.Scanner;
 
 public class Kernel {
     CPU cpu;
     int[][] ram;
+
+    int instructionCounter = 0;
 
     int clockPosition = 0;
 
@@ -23,18 +28,27 @@ public class Kernel {
             System.out.println(values.get(memoryAddress.offset));
 
             final int nextMemLoc = FindEmptyMemory();
+
             // System.out.println("Next Mem: " + nextMemLoc);
 
+            if (values.size() > 256) {
+                throw new RuntimeException("Page file: " + memoryAddress.pageFrameHex() + " has length: " + values.size());
+            }
+
             if (nextMemLoc == -1) {
-                final int nextFrame = findNextAvailableMemoryLocation();
-                // System.out.println("Next Frame: " + nextFrame);
+                final int nextPage = findNextAvailableMemoryLocation();
+                // System.out.println("Next Page: " + nextPage);
 
                 //guard
-                if (nextFrame == -1) {
+                if (nextPage == -1) {
                     throw new RuntimeException("No new memory space could be found");
                 }
 
-                final PageTableEntry page = cpu.mmu.virtualPageTable.pageTable[nextFrame];
+                final PageTableEntry page = cpu.mmu.virtualPageTable.pageTable[nextPage];
+
+                if (page.pageFrame > ram.length || nextMemLoc > ram.length) {
+                    throw new RuntimeException("Page frame outside of memory bounds");
+                }
 
                 if (page != null && page.d == 1) {
                     //page file needs to be update
@@ -42,29 +56,30 @@ public class Kernel {
                     for (int item : ram[page.pageFrame]) {
                         if (fileContents.isEmpty()) {
                             fileContents = String.format("%d", item);
+                        } else {
+                            fileContents += String.format("%n%d", item);
                         }
-                        fileContents += String.format("%n%d", item);
                     }
 
                     System.out.println("[Writing to Page File]");
-                    try(FileWriter myWriter = new FileWriter("page_files/" + String.format("%02X", page.pageFrame) + ".pg")) {
+                    try(FileWriter myWriter = new FileWriter("page_files/" + String.format("%02X", page.pageFrame) + ".pg", false)) {
                         myWriter.write(fileContents);
                     } catch (Exception e) {
                         System.out.println("An error occurred while saving your file");
                     }
                 }
 
-                cpu.mmu.addToMemory(memoryAddress, nextFrame);
+                cpu.mmu.addToMemory(memoryAddress, page.pageFrame);
                 
                 if (page != null) {
                     for (int i = 0; i < 256; i++) {
                         ram[page.pageFrame][i] = Integer.parseInt(values.get(i));
                     }
 
-                    cpu.mmu.virtualPageTable.pageTable[nextFrame].pageFrame = 0;
+                    cpu.mmu.virtualPageTable.pageTable[nextPage].pageFrame = -1;
                 } else {
                     for (int i = 0; i < values.size(); i++) {
-                        ram[nextFrame][i] = Integer.parseInt(values.get(i));
+                        ram[nextPage][i] = Integer.parseInt(values.get(i));
                     }
                 }
             } else {
@@ -82,9 +97,9 @@ public class Kernel {
     public int findNextAvailableMemoryLocation() {
         while (true) {
             PageTableEntry page = cpu.mmu.virtualPageTable.pageTable[clockPosition];
-            if (page != null && page.r == 0) {
+            if (page != null && page.pageFrame != -1 && page.r == 0) {
                 return clockPosition;
-            } else if (page != null) {
+            } else if (page != null && page.pageFrame != -1) {
                 page.r = 0;
             }
             clockPosition++;
@@ -107,5 +122,29 @@ public class Kernel {
         }
 
         return -1;
+    }
+
+    public void RunInstructions(String fileName) {
+        File file = new File(fileName); 
+        Scanner sc;
+        try {
+            sc = new Scanner(file);
+            while (sc.hasNextLine()) {
+                if (Integer.parseInt(sc.nextLine()) == 0) {
+                    final String value = sc.nextLine();
+                    cpu.memoryRead(ram, this, new Hexadecimal(value));
+                } else {
+                    final String location = sc.nextLine();
+                    final int value = Integer.parseInt(sc.nextLine());
+
+                    cpu.memoryWrite(ram, this, new Hexadecimal(location), value);
+                }
+            }
+    
+            sc.close();
+        } catch (FileNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 }

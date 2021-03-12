@@ -1,7 +1,3 @@
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.util.Scanner;
-
 import Exceptions.*;
 
 public class MemorySimulator {
@@ -22,53 +18,11 @@ public class MemorySimulator {
 
         Kernel os = new Kernel(cpu, ram);
 
-        File file = new File("test_files/test_1.txt"); 
-        Scanner sc;
-        try {
-            sc = new Scanner(file);
-            while (sc.hasNextLine()) {
-                if (Integer.parseInt(sc.nextLine()) == 0) {
-                    final String value = sc.nextLine();
-                    memoryRead(cpu, ram, os, new Hexadecimal(value));
-                } else {
-                    final String location = sc.nextLine();
-                    final int value = Integer.parseInt(sc.nextLine());
-
-                    memoryWrite(cpu, ram, os, new Hexadecimal(location), value);
-                }
-            }
-    
-            sc.close();
-        } catch (FileNotFoundException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-    }
-    public static void memoryRead(CPU cpu, int[][] ram, Kernel os, Hexadecimal memoryLocation) {
-        try {
-            final Hexadecimal location = cpu.readMemory(memoryLocation);
-            final int value = ram[location.pageFrame][location.offset];
-            if (value != -1) {
-                System.out.println(value);
-            } else {
-                System.out.println("[No Data]");
-            }
-        } catch (PageFault e) {
-            System.out.println("Page fault");
-            os.handlePageFault(memoryLocation);
-        }
-    }
-    public static void memoryWrite(CPU cpu, int[][] ram, Kernel os, Hexadecimal memoryLocation, int value) {
-        try {
-            final Hexadecimal location = cpu.readMemory(memoryLocation);
-            ram[location.pageFrame][location.offset] = value;
-
-            System.out.println("[Memory updated]");
-        } catch (PageFault e) {
-            System.out.println("[Page fault]");
-            os.handlePageFault(memoryLocation);
+        if (args.length == 0) {
+            System.err.println("No file was provided");
+            return;
         }
 
-        cpu.mmu.setDirtyBit(memoryLocation);
+        os.RunInstructions(args[0]);
     }
 }
