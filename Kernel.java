@@ -8,6 +8,8 @@ import java.io.FileNotFoundException;
 import java.util.Scanner;
 
 public class Kernel {
+    static CSVRow reportRow = new CSVRow();
+
     CPU cpu;
     int[][] ram;
 
@@ -26,6 +28,8 @@ public class Kernel {
         try {
             List<String> values = Files.readAllLines(Paths.get(fileLocation));
             System.out.println(values.get(memoryAddress.offset));
+            
+            Kernel.reportRow.value = Integer.parseInt(values.get(memoryAddress.offset));
 
             final int nextMemLoc = FindEmptyMemory();
 
@@ -37,6 +41,7 @@ public class Kernel {
 
             if (nextMemLoc == -1) {
                 final int nextPage = findNextAvailableMemoryLocation();
+                Kernel.reportRow.evictedPage = nextPage;
                 // System.out.println("Next Page: " + nextPage);
 
                 //guard
@@ -52,6 +57,8 @@ public class Kernel {
 
                 if (page != null && page.d == 1) {
                     //page file needs to be update
+                    Kernel.reportRow.evictedPage_dirtyBit = 1;
+
                     String fileContents = "";
                     for (int item : ram[page.pageFrame]) {
                         if (fileContents.isEmpty()) {
@@ -131,18 +138,47 @@ public class Kernel {
         try {
             sc = new Scanner(file);
             while (sc.hasNextLine()) {
+                Kernel.reportRow = new CSVRow();
+
                 if (Integer.parseInt(sc.nextLine()) == 0) {
                     final String value = sc.nextLine();
+                    Kernel.reportRow.address = new Hexadecimal(value);
                     cpu.memoryRead(ram, this, new Hexadecimal(value));
                 } else {
                     final String location = sc.nextLine();
                     final int value = Integer.parseInt(sc.nextLine());
 
+                    Kernel.reportRow.value = value;
+
+                    Kernel.reportRow.address = new Hexadecimal(location);
                     cpu.memoryWrite(ram, this, new Hexadecimal(location), value);
                 }
+
+                instructionCounter++;
+
+                if (instructionCounter == 10) {
+                    for (PageTableEntry page : cpu.mmu.virtualPageTable.pageTable) {
+                        if (page != null) {
+                            page.r = 0;
+                        }
+                    }
+
+                    instructionCounter = 0;
+                }
+
+                MemorySimulator.report.rows.add(Kernel.reportRow);
             }
     
             sc.close();
+
+            try {
+                MemorySimulator.report.saveFile("report.csv");
+            } catch (Exception e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+
+            System.out.println(MemorySimulator.report);
         } catch (FileNotFoundException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

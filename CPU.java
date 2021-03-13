@@ -20,9 +20,11 @@ public class CPU {
     private Hexadecimal readMemory(Hexadecimal memoryLocation) {
         try {
             TLBEntry page = tlb.findPage(memoryLocation);
+            Kernel.reportRow.hit = true;
             return new Hexadecimal(String.format("%02X", page.tableEntry.pageFrame) + memoryLocation.offsetHex());
         } catch (TLBFault ex) {
             System.out.println("[TLB Fault]");
+            Kernel.reportRow.softMiss = true;
             return mmu.readMemory(tlb, memoryLocation);
         }
     }
@@ -36,8 +38,11 @@ public class CPU {
             } else {
                 System.out.println("[No Data]");
             }
+            Kernel.reportRow.value = value;
+            Kernel.reportRow.hit = true;
         } catch (PageFault e) {
             System.out.println("Page fault");
+            Kernel.reportRow.hardMiss = true;
             os.handlePageFault(memoryLocation);
         }
     }
@@ -49,6 +54,7 @@ public class CPU {
             System.out.println("[Memory updated]");
         } catch (PageFault e) {
             System.out.println("[Page fault]");
+            Kernel.reportRow.hardMiss = true;
             os.handlePageFault(memoryLocation);
         }
 

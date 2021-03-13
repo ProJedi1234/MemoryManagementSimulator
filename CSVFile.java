@@ -19,30 +19,15 @@ public class CSVFile {
         }
     }
 
-    public Float getAverageCompletionTime() {
-        Float total = 0f;
-        int count = 0;
-        for (CSVRow row : rows) {
-            if (row.Complete != 0) {
-                total += row.Complete;
-                count++;
-            }
-        }
-
-        return count == 0 ? 0 : total/count;
-    }
-
     @Override
     public String toString() {
         String toReturn = "";
 
-        toReturn += "Proc Time,PID,Start Burst,End Burst, Complete\n";
+        toReturn += "Address,Value,Soft Miss,Hard Miss, Hit, Evicted Page, Dirty Bit\n";
 
         for (CSVRow row : rows) {
             toReturn += row.toString() + "\n";
         }
-
-        toReturn += "Average,,,," + getAverageCompletionTime();
 
         return toReturn;
     }

@@ -16,7 +16,7 @@
             "request": "launch",
             "mainClass": "MemorySimulator",
             "projectName": "Project 2 Java_52cfd59f",
-            "args": "test_files/test_5.txt"
+            "args": "test_files/test_1.txt"
         }
     ]
 }
