@@ -28,8 +28,12 @@ public class TLB {
     }
     public TLBEntry findPage(Hexadecimal memoryAddress) throws TLBFault {
         for (TLBEntry tlbEntry : data) {
-            if (tlbEntry != null && tlbEntry.vPage == memoryAddress.pageFrame){
-                return tlbEntry;
+            if (tlbEntry != null && tlbEntry.vPage == memoryAddress.pageFrame) {
+                if (tlbEntry.tableEntry.pageFrame != -1) {
+                    return tlbEntry;
+                } else {
+                    break;
+                }
             }
         }
 
