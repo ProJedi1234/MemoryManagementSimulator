@@ -78,18 +78,12 @@ public class Kernel {
 
                 cpu.mmu.addToMemory(memoryAddress, page.pageFrame, cpu.tlb);
                 
-                if (page != null) {
-                    for (int i = 0; i < 256; i++) {
-                        ram[page.pageFrame][i] = Integer.parseInt(values.get(i));
-                    }
-
-                    cpu.tlb.deletePage(memoryAddress);
-                    cpu.mmu.virtualPageTable.pageTable[nextPage].pageFrame = -1;
-                } else {
-                    for (int i = 0; i < values.size(); i++) {
-                        ram[nextPage][i] = Integer.parseInt(values.get(i));
-                    }
+                for (int i = 0; i < 256; i++) {
+                    ram[page.pageFrame][i] = Integer.parseInt(values.get(i));
                 }
+
+                cpu.tlb.deletePage(memoryAddress);
+                cpu.mmu.virtualPageTable.pageTable[nextPage].pageFrame = -1;
             } else {
                 cpu.mmu.addToMemory(memoryAddress, nextMemLoc, cpu.tlb);
 
