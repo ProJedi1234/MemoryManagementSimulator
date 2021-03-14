@@ -23,7 +23,11 @@ public class MemorySimulator {
             System.err.println("No file was provided");
             return;
         }
+        if (args.length == 1) {
+            System.err.println("No report file was provided");
+            return;
+        }
 
-        os.RunInstructions(args[0]);
+        os.RunInstructions(args[0], args[1]);
     }
 }

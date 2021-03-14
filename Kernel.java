@@ -132,7 +132,7 @@ public class Kernel {
         return -1;
     }
 
-    public void RunInstructions(String fileName) {
+    public void RunInstructions(String fileName, String reportName) {
         File file = new File(fileName); 
         Scanner sc;
         try {
@@ -172,7 +172,7 @@ public class Kernel {
             sc.close();
 
             try {
-                MemorySimulator.report.saveFile("report.csv");
+                MemorySimulator.report.saveFile(reportName);
             } catch (Exception e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
